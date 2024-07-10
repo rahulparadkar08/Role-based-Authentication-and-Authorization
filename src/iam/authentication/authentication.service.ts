@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { HashingService } from '../hashing/hashing.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -18,7 +18,7 @@ export class AuthenticationService {
             const user = new User()
             user.email = signUpDto.email
             user.password =await this.hashingService.hash(signUpDto.password)
-             this.userRepository.save(user)
+            await this.userRepository.save(user)
         } catch (err) {
             const pgUniqueViolationErrorCode = '23505';
             if (err.code === pgUniqueViolationErrorCode) {
@@ -29,6 +29,17 @@ export class AuthenticationService {
     }
 
     async signIn(signInDto:SignInDto){
-        return "ok"
+        const user = await this.userRepository.findOneBy({email:signInDto.email})
+        if(!user){
+            throw new UnauthorizedException("user does not exists")
+        }
+        const isEqual = await this.hashingService.compare(
+            signInDto.password,
+            user.password
+        )
+        if(!isEqual){
+            throw new UnauthorizedException('Password does not match')
+        }
+        return true
     }
 }
