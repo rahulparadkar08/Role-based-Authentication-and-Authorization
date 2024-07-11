@@ -17,7 +17,6 @@ export class DashboardController {
 
   @Get()
   findAll(@ActiveUser() user:ActiveUserData) {
-    console.log(user)
     return this.dashboardService.findAll();
   }
 
