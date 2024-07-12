@@ -5,11 +5,14 @@ import { UpdateDashboardDto } from './dto/update-dashboard.dto';
 import { request } from 'express';
 import { ActiveUser } from 'src/iam/decorators/active-user.decorator';
 import { ActiveUserData } from 'src/iam/interfaces/active-user-data.interface';
+import { Roles } from 'src/iam/authorization/decorators/roles.decorator';
+import { Role } from 'src/users/enums/role.enum';
 
 @Controller('dashboard')
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
+  @Roles(Role.Admin)
   @Post()
   create(@Body() createDashboardDto: CreateDashboardDto) {
     return this.dashboardService.create(createDashboardDto);
@@ -25,6 +28,7 @@ export class DashboardController {
     return this.dashboardService.findOne(+id);
   }
 
+  @Roles(Role.Admin)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateDashboardDto: UpdateDashboardDto) {
     return this.dashboardService.update(+id, updateDashboardDto);
